@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ type Alumno struct {
 	ID     string `json:"id"`
 	Nombre string `json:"nombre"`
 	DNI    int    `json:"dni"`
-	Age    int    `json:"age"`
+	Edad   int    `json:"edad"`
 }
 
 var alumnos []Alumno
