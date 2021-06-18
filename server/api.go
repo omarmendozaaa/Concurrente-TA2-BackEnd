@@ -1,7 +1,11 @@
 package server
 
 import (
+	"encoding/csv"
+	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -9,45 +13,108 @@ import (
 type api struct {
 	router http.Handler
 }
+
 type Server interface {
 	Router() http.Handler
 }
 
+var Centroids []Node
+
 func middlewareCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, req *http.Request) {
-			// Just put some headers to allow CORS...
-			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 			w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-			// and call next handler!
 			next.ServeHTTP(w, req)
 		})
 }
 func enableCORS(router *mux.Router) {
 	router.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 	}).Methods(http.MethodOptions)
 	router.Use(middlewareCors)
 }
+
+var DataSetNodes []Node
+
 func New() Server {
 
 	a := &api{}
 	r := mux.NewRouter()
+	//Habilitamos los CORS
 	enableCORS(r)
-	//Empty Database
-	alumnos = append(alumnos, Alumno{ID: "1", Nombre: "Omar Mendoza", DNI: 33429504, Edad: 80})
-	alumnos = append(alumnos, Alumno{ID: "2", Nombre: "Roman Ramirez", DNI: 72511063, Edad: 57})
-	alumnos = append(alumnos, Alumno{ID: "3", Nombre: "Roberto Gampi", DNI: 12318290, Edad: 35})
-	alumnos = append(alumnos, Alumno{ID: "4", Nombre: "Tela Meto El Jueves", DNI: 34298424, Edad: 22})
-	alumnos = append(alumnos, Alumno{ID: "5", Nombre: "Lo mismo para tu prima", DNI: 33407982, Edad: 19})
-	//Rutas y Endpoints
-	r.HandleFunc("/alumnos", GetAlumnos).Methods("GET")
-	r.HandleFunc("/alumnos/{id}", GetAlumno).Methods("GET")
-	r.HandleFunc("/alumnos", CreateAlumno).Methods("POST")
-	r.HandleFunc("/alumnos/{id}", UpdateAlumno).Methods("PUT")
-	r.HandleFunc("/alumnos/{id}", DeleteAlumno).Methods("DELETE")
+
+	DataSet, err := os.Open("C:/Users/Hysteria/go/src/hysteria/backend-go/server/N_DataSetFeminicidio.csv")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Se cargó satisfactoriamente el DataSet")
+	defer DataSet.Close()
+
+	DataSetLines, err := csv.NewReader(DataSet).ReadAll()
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, line := range DataSetLines {
+
+		param1, _ := strconv.ParseFloat(line[1], 64)
+		param2, _ := strconv.ParseFloat(line[5], 64)
+		param3, _ := strconv.ParseFloat(line[6], 64)
+		param4, _ := strconv.ParseFloat(line[8], 64)
+		param5, _ := strconv.ParseFloat(line[9], 64)
+		param6, _ := strconv.ParseFloat(line[10], 64)
+		param7, _ := strconv.ParseFloat(line[11], 64)
+		param8, _ := strconv.ParseFloat(line[12], 64)
+		param9, _ := strconv.ParseFloat(line[13], 64)
+		param10, _ := strconv.ParseFloat(line[14], 64)
+		param11, _ := strconv.ParseFloat(line[15], 64)
+		param12, _ := strconv.ParseFloat(line[16], 64)
+		param13, _ := strconv.ParseFloat(line[17], 64)
+		param14, _ := strconv.ParseFloat(line[18], 64)
+		param15, _ := strconv.ParseFloat(line[19], 64)
+
+		var datita Node = Node{
+			float64(param1),
+			float64(param2),
+			float64(param3),
+			float64(param4),
+			float64(param5),
+			float64(param6),
+			float64(param7),
+			float64(param8),
+			float64(param9),
+			float64(param10),
+			float64(param11),
+			float64(param12),
+			float64(param13),
+			float64(param14),
+			float64(param15)}
+		DataSetNodes = append(DataSetNodes, datita)
+	}
+
+	//Train( data, clusters, iteraciones para definir centroide)
+	_, Centroids = Train(DataSetNodes, 3, 50)
+	fmt.Println("Centroides:", Centroids)
+
+	// alumnos = append(alumnos, Alumno{ID: "1", Nombre: "Omar Mendoza", DNI: 33429504, Edad: 80})
+	// alumnos = append(alumnos, Alumno{ID: "2", Nombre: "Roman Ramirez", DNI: 72511063, Edad: 57})
+	// alumnos = append(alumnos, Alumno{ID: "3", Nombre: "Roberto Gampi", DNI: 12318290, Edad: 35})
+	// alumnos = append(alumnos, Alumno{ID: "4", Nombre: "Julia Romina", DNI: 34298424, Edad: 22})
+	// alumnos = append(alumnos, Alumno{ID: "5", Nombre: "Neiko Gampi", DNI: 33407982, Edad: 19})
+
+	// // Rutas y Endpoints Pruebas API
+	// r.HandleFunc("/alumnos", GetAlumnos).Methods("GET", "OPTIONS")
+	// r.HandleFunc("/alumnos/{id}", GetAlumno).Methods("GET", "OPTIONS")
+	// r.HandleFunc("/alumnos", CreateAlumno).Methods("POST", "OPTIONS")
+	// r.HandleFunc("/alumnos/{id}", UpdateAlumno).Methods("PUT", "OPTIONS")
+	// r.HandleFunc("/alumnos/{id}", DeleteAlumno).Methods("DELETE", "OPTIONS")
+	//Rutas y Endpoints Machine Learning Golang
+
+	r.HandleFunc("/gokmeans/predict", PredictKmeans).Methods("GET", "OPTIONS")
+	r.HandleFunc("/gokmeans/centroids", GetCentroids).Methods("GET", "OPTIONS")
+
 	//Iniciar Servidor
 	a.router = r
 	return a
