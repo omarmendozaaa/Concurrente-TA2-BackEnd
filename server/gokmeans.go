@@ -16,7 +16,6 @@ type Data struct {
 	VICTIMA_NRO_HIJOS       float64 `json:"victima_nro_hijos"`
 	AGRESOR_EDAD            float64 `json:"agresor_edad"`
 	ALCOHOL_DROGAS          float64 `json:"alcohol_drogas"`
-	AGRESOR_TRABAJA         float64 `json:"agresor_trabaja"`
 	ACUCHILLAMIENTO         float64 `json:"acuchillamiento"`
 	GOLPES_DIVERSOS         float64 `json:"golpes_diversos"`
 	DISPARO_BALA            float64 `json:"disparo_bala"`
@@ -29,6 +28,10 @@ type Data struct {
 }
 type Cluster struct {
 	Index int `json:"index"`
+}
+type Cent struct {
+	Valor  float64 `json:"Claster 1"`
+	Valor2 float64 `json:"Claster 2"`
 }
 
 // Train takes an array of Nodes (observations), and produces as many centroids as specified by
@@ -193,7 +196,37 @@ func wait(c chan int, values Node) {
 
 func GetCentroids(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Centroids)
+	var datita []Cent
+	var datitaoficial []Cent
+	var temp Cent
+	iterable := 0
+	for _, value := range Centroids[0] {
+		temp.Valor = value
+		datita = append(datita, temp)
+	}
+
+	for _, value2 := range datita {
+		temp = value2
+		temp.Valor2 = Centroids[1][iterable]
+		iterable += 1
+		datitaoficial = append(datitaoficial, temp)
+	}
+	// temp.Valor = value[0]
+	// temp.VICTIMA_EDAD = value[1]
+	// temp.VICTIMA_NRO_HIJOS = value[2]
+	// temp.AGRESOR_EDAD = value[3]
+	// temp.ALCOHOL_DROGAS = value[4]
+	// temp.ACUCHILLAMIENTO = value[5]
+	// temp.GOLPES_DIVERSOS = value[6]
+	// temp.DISPARO_BALA = value[7]
+	// temp.ENVENENAMIENTO = value[8]
+	// temp.DESBARRANCAMIENTO = value[9]
+	// temp.ASFIXIA_ESTRAGULAMIENTO = value[10]
+	// temp.ATROPELLAMIENTO = value[11]
+	// temp.QUEMADURA = value[12]
+	// temp.OTRO = value[13]
+
+	json.NewEncoder(w).Encode(datitaoficial)
 }
 
 //Realiza la predicción
@@ -207,7 +240,6 @@ func PredictKmeans(w http.ResponseWriter, r *http.Request) {
 		newdata.VICTIMA_NRO_HIJOS,
 		newdata.AGRESOR_EDAD,
 		newdata.ALCOHOL_DROGAS,
-		newdata.AGRESOR_TRABAJA,
 		newdata.ACUCHILLAMIENTO,
 		newdata.GOLPES_DIVERSOS,
 		newdata.DISPARO_BALA,
