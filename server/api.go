@@ -95,20 +95,6 @@ func New() Server {
 	//Train( data, clusters, iteraciones para definir centroide)
 	_, Centroids = Train(DataSetNodes, 2, 148)
 
-	alumnos = append(alumnos, Alumno{ID: "1", Nombre: "Omar Mendoza", DNI: 33429504, Edad: 80})
-	alumnos = append(alumnos, Alumno{ID: "2", Nombre: "Roman Ramirez", DNI: 72511063, Edad: 57})
-	alumnos = append(alumnos, Alumno{ID: "3", Nombre: "Roberto Gampi", DNI: 12318290, Edad: 35})
-	alumnos = append(alumnos, Alumno{ID: "4", Nombre: "Julia Romina", DNI: 34298424, Edad: 22})
-	alumnos = append(alumnos, Alumno{ID: "5", Nombre: "Neiko Gampi", DNI: 33407982, Edad: 19})
-
-	// Rutas y Endpoints Pruebas API
-	r.HandleFunc("/alumnos", GetAlumnos).Methods("GET", "OPTIONS")
-	r.HandleFunc("/alumnos/{id}", GetAlumno).Methods("GET", "OPTIONS")
-	r.HandleFunc("/alumnos", CreateAlumno).Methods("POST", "OPTIONS")
-	r.HandleFunc("/alumnos/{id}", UpdateAlumno).Methods("PUT", "OPTIONS")
-	r.HandleFunc("/alumnos/{id}", DeleteAlumno).Methods("DELETE", "OPTIONS")
-	//Rutas y Endpoints Machine Learning Golang
-
 	r.HandleFunc("/gokmeans/predict", PredictKmeans).Methods("GET", "OPTIONS")
 	r.HandleFunc("/gokmeans/centroids", GetCentroids).Methods("GET", "OPTIONS")
 
