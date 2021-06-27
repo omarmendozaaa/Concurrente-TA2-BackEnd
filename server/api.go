@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -39,21 +38,36 @@ func enableCORS(router *mux.Router) {
 
 var DataSetNodes []Node
 
+func leerCSVdesdeURL(url string) ([][]string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	reader := csv.NewReader(resp.Body)
+	reader.Comma = ','
+	data, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func New() Server {
 
 	a := &api{}
 	r := mux.NewRouter()
 	//Habilitamos los CORS
 	enableCORS(r)
+	url := "https://raw.githubusercontent.com/omarmendozaaa/Concurrente-TA2-BackEnd/master/server/N_DataSetFeminicidio.csv"
 
-	DataSet, err := os.Open("C:/Users/Hysteria/go/src/hysteria/backend-go/server/N_DataSetFeminicidio.csv")
-	if err != nil {
-		fmt.Println(err)
-	}
 	fmt.Println("Se cargó satisfactoriamente el DataSet")
-	defer DataSet.Close()
 
-	DataSetLines, err := csv.NewReader(DataSet).ReadAll()
+	DataSetLines, err := leerCSVdesdeURL(url)
+	if err != nil {
+		panic(err)
+	}
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -96,7 +110,7 @@ func New() Server {
 	_, Centroids = Train(DataSetNodes, 2, 148)
 
 	r.HandleFunc("/gokmeans/predict", PredictKmeans).Methods("GET", "OPTIONS")
-	r.HandleFunc("/gokmeans/centroids", GetCentroids).Methods("GET", "OPTIONS")
+	r.HandleFunc("/gokmeans/centroids/graph", GetCentroids).Methods("GET", "OPTIONS")
 
 	//Iniciar Servidor
 	a.router = r
