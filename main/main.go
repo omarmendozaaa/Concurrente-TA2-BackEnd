@@ -10,6 +10,6 @@ import (
 
 func main() {
 	s := server.New()
-	fmt.Println("Welcome . . .")
+	fmt.Println("Welcome . . . . . . . .")
 	log.Fatal(http.ListenAndServe(":8080", s.Router()))
 }
